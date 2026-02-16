@@ -17,20 +17,9 @@
 *
 */
 
-char *mode_string[]={
-  "LSB"
-  ,"USB"
-  ,"DSB"
-  ,"CWL"
-  ,"CWU"
-  ,"FMN"
-  ,"AM"
-  ,"DIGU"
-  ,"SPEC"
-  ,"DIGL"
-  ,"SAM"
-  ,"DRM"
-};
+#ifndef _MODES_FILTER_MENU_H
+#define _MODES_FILTER_MENU_H
 
-int mode_enabled[12]={1,1,1,1,1,1,1,1,1,1,1,1};
+extern void modes_filter_menu(GtkWidget *parent);
 
+#endif

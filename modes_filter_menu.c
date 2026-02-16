@@ -1,5 +1,5 @@
 /* Copyright (C)
-* 2016 - John Melton, G0ORX/N6LYT
+* 2015 - John Melton, G0ORX/N6LYT
 *
 * This program is free software; you can redistribute it and/or
 * modify it under the terms of the GNU General Public License
@@ -24,21 +24,11 @@
 #include <string.h>
 
 #include "new_menu.h"
-#include "band_menu.h"
-#include "band.h"
-#include "bandstack.h"
-#include "filter.h"
 #include "mode.h"
-#include "radio.h"
-#include "receiver.h"
 #include "vfo.h"
-#include "button_text.h"
 
 static GtkWidget *parent_window=NULL;
-
 static GtkWidget *dialog=NULL;
-
-static GtkWidget *last_mode;
 
 static void cleanup() {
   if(dialog!=NULL) {
@@ -49,7 +39,7 @@ static void cleanup() {
   }
 }
 
-static gboolean close_cb (GtkWidget *widget, GdkEventButton *event, gpointer data) {
+static gboolean close_cb(GtkWidget *widget, GdkEventButton *event, gpointer data) {
   cleanup();
   return TRUE;
 }
@@ -59,70 +49,59 @@ static gboolean delete_event(GtkWidget *widget, GdkEvent *event, gpointer user_d
   return FALSE;
 }
 
-static gboolean mode_select_cb (GtkWidget *widget, gpointer        data) {
-  int m=GPOINTER_TO_UINT(data);
-  set_button_text_color(last_mode,"black");
-  last_mode=widget;
-  set_button_text_color(last_mode,"orange");
-  vfo_mode_changed(m);
-  return FALSE;
+static void mode_toggle_cb(GtkToggleButton *button, gpointer data) {
+  int m=GPOINTER_TO_INT(data);
+  int enabled=gtk_toggle_button_get_active(button);
+
+  /* count how many modes are currently enabled */
+  int count=0;
+  for(int i=0;i<MODES;i++) count+=mode_enabled[i];
+
+  /* prevent disabling the last enabled mode */
+  if(!enabled && count<=1) {
+    gtk_toggle_button_set_active(button, TRUE);
+    return;
+  }
+
+  mode_enabled[m]=enabled ? 1 : 0;
+  modesettings_save_state();
 }
 
-void mode_menu(GtkWidget *parent) {
-  int i;
-
+void modes_filter_menu(GtkWidget *parent) {
   parent_window=parent;
 
   dialog=gtk_dialog_new();
   gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(parent_window));
-  //gtk_window_set_decorated(GTK_WINDOW(dialog),FALSE);
-  char title[64];
-  sprintf(title,"piHPSDR - Mode (RX %d VFO %s)",active_receiver->id,active_receiver->id==0?"A":"B");
-  gtk_window_set_title(GTK_WINDOW(dialog),title);
-  g_signal_connect (dialog, "delete_event", G_CALLBACK (delete_event), NULL);
+  gtk_window_set_title(GTK_WINDOW(dialog),"piHPSDR - Active Modes");
+  g_signal_connect(dialog,"delete_event",G_CALLBACK(delete_event),NULL);
 
   GdkRGBA color;
-  color.red = 1.0;
-  color.green = 1.0;
-  color.blue = 1.0;
-  color.alpha = 1.0;
+  color.red=1.0; color.green=1.0; color.blue=1.0; color.alpha=1.0;
   gtk_widget_override_background_color(dialog,GTK_STATE_FLAG_NORMAL,&color);
 
   GtkWidget *content=gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 
   GtkWidget *grid=gtk_grid_new();
-
   gtk_grid_set_column_homogeneous(GTK_GRID(grid),TRUE);
   gtk_grid_set_row_homogeneous(GTK_GRID(grid),TRUE);
-  gtk_grid_set_column_spacing (GTK_GRID(grid),5);
-  gtk_grid_set_row_spacing (GTK_GRID(grid),5);
+  gtk_grid_set_column_spacing(GTK_GRID(grid),5);
+  gtk_grid_set_row_spacing(GTK_GRID(grid),5);
 
   GtkWidget *close_b=gtk_button_new_with_label("Close");
-  g_signal_connect (close_b, "pressed", G_CALLBACK(close_cb), NULL);
-  gtk_grid_attach(GTK_GRID(grid),close_b,0,0,1,1);
+  g_signal_connect(close_b,"pressed",G_CALLBACK(close_cb),NULL);
+  gtk_grid_attach(GTK_GRID(grid),close_b,0,0,2,1);
 
-  int mode=vfo[active_receiver->id].mode;
+  GtkWidget *label=gtk_label_new("Check modes to include in MIDI cycling:");
+  gtk_grid_attach(GTK_GRID(grid),label,0,1,2,1);
 
-  int col=0;
-  int row=1;
-  for(i=0;i<MODES;i++) {
-    if(!mode_enabled[i]) continue;
-    GtkWidget *b=gtk_button_new_with_label(mode_string[i]);
-    if(i==mode) {
-      set_button_text_color(b,"orange");
-      last_mode=b;
-    } else {
-      set_button_text_color(b,"black");
-    }
-    gtk_widget_show(b);
-    gtk_grid_attach(GTK_GRID(grid),b,col%5,row+(col/5),1,1);
-    col++;
-    g_signal_connect(b,"pressed",G_CALLBACK(mode_select_cb),(gpointer)(long)i);
+  for(int i=0;i<MODES;i++) {
+    GtkWidget *b=gtk_check_button_new_with_label(mode_string[i]);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(b), mode_enabled[i]);
+    gtk_grid_attach(GTK_GRID(grid),b,i%2,2+(i/2),1,1);
+    g_signal_connect(b,"toggled",G_CALLBACK(mode_toggle_cb),GINT_TO_POINTER(i));
   }
+
   gtk_container_add(GTK_CONTAINER(content),grid);
-
   sub_menu=dialog;
-
   gtk_widget_show_all(dialog);
-
 }
