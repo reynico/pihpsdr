@@ -50,6 +50,7 @@
 #endif
 #include "audio.h"
 #include "ext.h"
+#include "rtty.h"
 
 double getNextSideToneSample();
 double getNextInternalSideToneSample();
@@ -1227,6 +1228,11 @@ void add_mic_sample(TRANSMITTER *tx,float mic_sample) {
   double mic_sample_double, ramp;
   int i,s;
   int updown;
+
+  // RTTY TX: replace mic sample with AFSK tone when enabled
+  if(rtty_enabled && mode==modeDIGL && isTransmitting()) {
+    mic_sample=rtty_tx_next_sample();
+  }
 
 //
 // silence TX audio if tuning, or when doing CW.

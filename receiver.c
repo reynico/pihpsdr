@@ -51,6 +51,7 @@
 #endif
 #include "ext.h"
 #include "new_menu.h"
+#include "rtty.h"
 #ifdef CLIENT_SERVER
 #include "client_server.h"
 #endif
@@ -1339,6 +1340,10 @@ static void process_rx_buffer(RECEIVER *rx) {
       right_sample=rx->audio_output_buffer[(i*2)+1];
       left_audio_sample=(short)(left_sample*32767.0);
       right_audio_sample=(short)(right_sample*32767.0);
+      // RTTY RX tap: only on RX0, only when enabled and not transmitting
+      if(rtty_enabled && rx->id==0) {
+        rtty_rx_sample((float)left_sample);
+      }
     }
 
     if(rx->local_audio) {

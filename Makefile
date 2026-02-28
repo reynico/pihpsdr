@@ -294,6 +294,8 @@ configure.c \
 i2c.c \
 gpio.c \
 encoder_menu.c \
+rtty.c \
+rtty_menu.c \
 switch_menu.c \
 toolbar_menu.c
 
@@ -374,6 +376,8 @@ configure.h \
 i2c.h \
 gpio.h \
 encoder_menu.h \
+rtty.h \
+rtty_menu.h \
 switch_menu.h \
 toolbar_menu.h
 
@@ -453,6 +457,8 @@ configure.o \
 i2c.o \
 gpio.o \
 encoder_menu.o \
+rtty.o \
+rtty_menu.o \
 switch_menu.o \
 toolbar_menu.o
 

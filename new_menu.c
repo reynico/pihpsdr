@@ -63,6 +63,7 @@
 #include "gpio.h"
 #include "old_protocol.h"
 #include "new_protocol.h"
+#include "rtty_menu.h"
 #ifdef CLIENT_SERVER
 #include "server_menu.h"
 #endif
@@ -227,6 +228,12 @@ static gboolean toolbar_cb (GtkWidget *widget, GdkEventButton *event, gpointer d
 static gboolean cw_cb (GtkWidget *widget, GdkEventButton *event, gpointer data) {
   cleanup();
   cw_menu(top_window);
+  return TRUE;
+}
+
+static gboolean rtty_cb (GtkWidget *widget, GdkEventButton *event, gpointer data) {
+  cleanup();
+  rtty_menu(top_window);
   return TRUE;
 }
 
@@ -552,6 +559,11 @@ void new_menu()
       GtkWidget *cw_b=gtk_button_new_with_label("CW");
       g_signal_connect (cw_b, "button-press-event", G_CALLBACK(cw_cb), NULL);
       gtk_grid_attach(GTK_GRID(grid),cw_b,(i%5),i/5,1,1);
+      i++;
+
+      GtkWidget *rtty_b=gtk_button_new_with_label("RTTY");
+      g_signal_connect (rtty_b, "button-press-event", G_CALLBACK(rtty_cb), NULL);
+      gtk_grid_attach(GTK_GRID(grid),rtty_b,(i%5),i/5,1,1);
       i++;
     }
 

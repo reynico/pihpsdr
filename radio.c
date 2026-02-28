@@ -67,6 +67,7 @@
 #include "toolbar.h"
 #include "rigctl.h"
 #include "ext.h"
+#include "rtty.h"
 #ifdef LOCALCW
 #include "iambic.h"
 #endif
@@ -2071,6 +2072,17 @@ g_print("radioRestoreState: %s\n",property_path);
     value=getProperty("binaural");
     if(value) binaural=atoi(value);
 
+    value=getProperty("rtty_enabled");
+    if(value) rtty_enabled=atoi(value);
+    value=getProperty("rtty_mark_freq");
+    if(value) rtty_mark_freq=atoi(value);
+    value=getProperty("rtty_shift");
+    if(value) rtty_shift=atoi(value);
+    value=getProperty("rtty_baud_rate");
+    if(value) rtty_baud_rate=atof(value);
+    value=getProperty("rtty_invert");
+    if(value) rtty_invert=atoi(value);
+
     value=getProperty("calibration_ppm");
     if(value) calibration_ppm=atof(value);
 
@@ -2102,6 +2114,7 @@ g_print("radioRestoreState: %s\n",property_path);
     vfo_restore_state();
     modesettings_restore_state();
     gpio_restore_actions();
+    rtty_init(48000);
     value=getProperty("rigctl_enable");
     if(value) rigctl_enable=atoi(value);
     value=getProperty("rigctl_port_base");
@@ -2431,6 +2444,17 @@ g_print("radioSaveState: %s\n",property_path);
 
     sprintf(value,"%f",tone_level);
     setProperty("tone_level",value);
+
+    sprintf(value,"%d",rtty_enabled);
+    setProperty("rtty_enabled",value);
+    sprintf(value,"%d",rtty_mark_freq);
+    setProperty("rtty_mark_freq",value);
+    sprintf(value,"%d",rtty_shift);
+    setProperty("rtty_shift",value);
+    sprintf(value,"%f",rtty_baud_rate);
+    setProperty("rtty_baud_rate",value);
+    sprintf(value,"%d",rtty_invert);
+    setProperty("rtty_invert",value);
 
     /*
     sprintf(value,"%d",adc_attenuation[0]);
